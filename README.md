@@ -48,7 +48,7 @@ Use Node.js 22.x and Bun 1.4.0. Open [localhost:3000](http://localhost:3000) for
 - [Connector setup](CONNECTORS.md)
 - [Vercel deployment, environment variables, and launch checklist](DEPLOYMENT.md)
 
-To deploy on Vercel, configure the required environment variables and apply the Turso migrations using the [deployment guide](DEPLOYMENT.md). Keep `.env.local` and provider tokens out of version control.
+Vercel supports a credential-free landing page and read-only demo deployment. To enable real workspaces, configure the required environment variables and apply the Turso migrations using the [deployment guide](DEPLOYMENT.md). Partial service configuration is rejected. Keep `.env.local` and provider tokens out of version control.
 
 Run checks with `bun test`, `bun run typecheck`, and `bun run build`.
 

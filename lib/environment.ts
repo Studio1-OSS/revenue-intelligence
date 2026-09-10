@@ -14,6 +14,15 @@ export function productionDeployment(env: Environment = process.env) {
   return env.VERCEL_ENV === "production" || env.APP_ENV === "production";
 }
 
+// A credential-free deployment exposes the landing page and read-only demo only.
+export function publicPreviewOnly(env: Environment = process.env) {
+  return ![
+    ...serviceVariables.filter((key) => key !== "NEXT_PUBLIC_APP_URL"),
+    "TURSO_AUTH_TOKEN",
+    "AUTH0_AUDIENCE",
+  ].some((key) => env[key]?.trim());
+}
+
 export function environmentProblems(env: Environment, production = true) {
   const problems: string[] = [];
   for (const key of serviceVariables)

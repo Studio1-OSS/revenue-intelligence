@@ -2,6 +2,10 @@
 
 Target: Vercel, Turso Cloud (libSQL), and Auth0. Each workspace supplies its own Nebius key after login. No platform Nebius key is needed.
 
+## Public preview
+
+With no Auth0, Turso, encryption, or cron configuration, Vercel builds the landing page and read-only demo without credentials. Workspace pages, authentication endpoints, and service APIs remain unavailable (503); this does not enable public signup or AI. A canonical `NEXT_PUBLIC_APP_URL` may be set independently. Once any service configuration is added, production builds require complete valid configuration. Configure the full service environment and apply migrations before enabling real workspaces.
+
 ## Current release status
 
 The application has real server-side Auth0 sessions, libSQL persistence, encrypted workspace BYOK, processing, retrieval, chat, and MCP implementations. On 2026-09-07, the configured Turso Cloud database passed connection, all three migration checksums, native vector, and FTS readiness checks. It was initialized empty, with no demo records. Auth0 settings are configured locally; tenant discovery and the app-to-Universal-Login redirect passed, with email/password and Google sign-in offered. Interactive login, callback token exchange (including client-secret validation), workspace creation, Nebius calls, and public deployment remain unverified. Do not open public signup until the live acceptance checklist below passes.
@@ -47,7 +51,7 @@ The current ignored `.env.local` uses `http://127.0.0.1:3000`. For this configur
 1. Run `bun install --frozen-lockfile`, `bun test`, `bun run typecheck`, and `bun run build`.
 2. Run `bun run db:migrate` with production Turso credentials in the process environment. Migrations are explicit and checksum tracked. They are not run during every Vercel build or request.
 3. Run `bun run check:services` with the target environment loaded. This validates tenant discovery and database connectivity, migration checksums, native vectors, and FTS. It is read-only and does not send customer data to Auth0 or make billable AI calls. It cannot validate client secrets or callback registration without a real login.
-4. Push this project to a new repository you own. Import it in Vercel as Next.js, or run the Vercel CLI from this directory after signing in. `vercel.json` runs `build:deploy`; production builds fail if required configuration is missing or uses file storage. Do not override this with the unchecked local build command.
+4. Import the repository in Vercel as Next.js with the repository root as Root Directory. `vercel.json` runs `build:deploy` with pinned Bun. Credential-free builds provide only the public preview; once service configuration is present, builds reject missing required values or file storage. Do not override this with the unchecked local build command.
 5. Set the canonical deployment domain and update Auth0 callback/logout/origin settings and `NEXT_PUBLIC_APP_URL` to match. Redeploy after changing runtime variables.
 
 ## Live acceptance checklist

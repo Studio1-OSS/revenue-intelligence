@@ -98,6 +98,16 @@ export function Landing({ authConfigured }: { authConfigured: boolean }) {
               <KeyRound size={13} /> Your Nebius key. Your AI spend. Your
               customer evidence.
             </p>
+            <a
+              className="token-factory-cta"
+              href="https://dub.sh/aistudio"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Image src="/token-factory.png" alt="" width={40} height={40} />
+              <span>Powered by <strong>Token Factory</strong></span>
+              <ArrowUpRight size={16} aria-hidden="true" />
+            </a>
           </div>
           <div className="hero-index" aria-hidden="true">
             <span>RE / 01</span>

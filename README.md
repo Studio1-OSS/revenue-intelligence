@@ -1,21 +1,36 @@
 # Revenue-Intelligence
 
-A customer revenue workspace built with Next.js 16, Auth0 SDK v4, Turso/libSQL, and Nebius Token Factory. Account risk, expansion signals, competitor mentions, and source-backed questions share one evidence library.
+Turn customer feedback into account insights, revenue-risk signals, and evidence-backed answers.
 
-**Status: prototype.** Real server-side implementations are included, but public deployment and live acceptance checks remain. A passing build is not a production-readiness guarantee.
+Import GitHub issues, Airtable records, Tally responses, CSV files, or notes. Review customer accounts, spot expansion opportunities, and ask questions with citations to the original evidence.
+
+[<img src="public/token-factory.png" width="48" height="48" alt="Token Factory">](https://dub.sh/aistudio)
+
+**[Powered by Nebius Token Factory](https://dub.sh/aistudio)**. Bring your own AI key; each workspace's AI usage is billed to its Nebius account.
+
+## Stack
+
+| Layer | Technology |
+| --- | --- |
+| App | Next.js 16, React 19, TypeScript, Bun |
+| AI platform | Nebius Token Factory |
+| Chat and signals | NVIDIA Nemotron 3.5 Lightning or Nemotron 3 Super |
+| Embeddings | Qwen3-Embedding-8B, requested at 1,536 dimensions |
+| Database and search | Turso/libSQL, native vectors and FTS5 |
+| Authentication | Auth0 |
+| Deployment target | Vercel |
 
 ## Features
 
-- Account dashboard with risk, expansion signals, and evidence coverage.
-- GitHub Issues and Airtable read-only imports, signed Tally webhooks, CSV uploads, and manual notes.
-- Keyword and semantic search with evidence-backed AI answers.
-- Two Nemotron chat models and Qwen embeddings, using your workspace's Nebius key.
-- Saved questions with revocable public links to question text only.
-- Authenticated, workspace-scoped MCP tools for external assistants.
+- Account dashboard with risk, expansion signals, and source evidence.
+- GitHub Issues and Airtable manual sync, plus signed Tally webhooks.
+- Semantic and keyword search, cited answers, and saved questions.
+- Workspace-scoped MCP tools for external AI assistants.
+- Server-side encrypted AI keys and workspace-isolated data.
 
-Each user starts with an empty personal workspace. Team invitations and organization administration are not included yet.
+**Prototype:** live deployment checks are still required. Workspaces are personal; team invitations are not included. Demo company names are real, but all conversations and commercial figures are synthetic and imply no endorsement.
 
-## Run locally
+## Get Started
 
 ```sh
 git clone https://github.com/Studio1-OSS/revenue-intelligence.git
@@ -25,98 +40,18 @@ cp .env.example .env.local
 bun run dev
 ```
 
-Use Node.js 22+ and Bun. The landing page and read-only demo can be explored before service configuration. Follow the setup below before using a real workspace. `.env.local` and local database files are excluded from Git; `.env.example` contains placeholders only.
+Use Node.js 22+ and Bun. Open [localhost:3000](http://localhost:3000) for the landing page or `/demo` for the read-only sample workspace. Real workspaces require Auth0 configuration and database migrations. Add your Nebius key in **Nebius AI key**, import evidence, then select **Process evidence**.
 
-Open `http://localhost:3000` for the landing page. `/demo` is the explicit, read-only fictional workspace. `/dashboard`, `/accounts`, `/signals`, `/competitors`, `/settings/*`, and `/evidence/*` require Auth0 login and never fall back to sample records. Without sign-in configuration, those routes show `/setup`. Authenticated workspaces start empty.
+## Documentation
 
-The demo uses the real company names [Shopify](https://www.shopify.com), [Notion](https://www.notion.com), [Canva](https://www.canva.com), [Figma](https://www.figma.com), [Atlassian](https://www.atlassian.com), and [Zoom](https://www.zoom.com), with [Salesforce](https://www.salesforce.com) in a synthetic comparison. Only the names and public domains are real: every conversation, commercial figure, owner, date, score, and relationship is invented. These companies are not presented as customers or endorsers. The disclaimer is visible in the demo and embedded in sample documents and the downloadable CSV so it survives import.
+- [Architecture and user workflow](ARCHITECTURE.md)
+- [Connector setup](CONNECTORS.md)
+- [Vercel deployment, environment variables, and launch checklist](DEPLOYMENT.md)
 
-To enable real workspaces, configure the variables described in `.env.example` in an ignored `.env.local`. Register a Regular Web Application in Auth0 with callback `http://localhost:3000/auth/callback`, logout URL and web origin `http://localhost:3000`. `NEXT_PUBLIC_APP_URL` is passed explicitly to the Auth0 SDK as `appBaseUrl`.
+Vercel environment variables can be added later, but the production build requires them before deployment can succeed. Never commit `.env.local` or provider tokens.
 
-```sh
-bun run db:migrate
-bun run check:services --local
-bun run dev
-```
-
-Local database: `TURSO_DATABASE_URL=file:local.db`. Production requires a hosted Turso libSQL database. The migration creates native 1536-dimensional vector storage, a vector index, FTS5, tenant constraints, and the full workspace schema.
-
-### AI models
-
-Workspace owners choose **Nemotron 3.5 Lightning** (`nvidia/Nemotron-3_5-Lightning`, default, global endpoint) or **Nemotron 3 Super 120B A12B** (`nvidia/nemotron-3-super-120b-a12b`, US Central endpoint) in AI settings. This choice applies to chat and signal detection. Changing the model verifies it with the saved encrypted workspace key; past answers and signals are not regenerated. There is no arbitrary model override or shared API key fallback.
-
-Semantic retrieval uses **Qwen/Qwen3-Embedding-8B** through the global Nebius endpoint, independent of the chat model. Requests explicitly set `dimensions: 1536`, supported by [Nebius's embedding integration](https://github.com/nebius/token-factory-cookbook/blob/main/integrations/pixeltable/README.md). Evidence vectors and query vectors always use the same model and dimension. Citations are validated against actual evidence text, not generated by the embedding model.
-
-Migration `003_qwen_embeddings.sql` removes obsolete search vectors and queues completed chunks for re-embedding while preserving documents, classifications, signal status, and keys. Run migrations before starting the new version. Existing owners with older chat models must verify a supported model, then process evidence; re-embedding is billed to their Nebius account. Until it completes, keyword retrieval remains available but semantic coverage is incomplete. Switching between the two Nemotron chat models does not require re-embedding.
-
-## Use the app
-
-New to the project? Read [ARCHITECTURE.md](ARCHITECTURE.md) for the user journey, service roles, company-use limitations, and data flow. [CONNECTORS.md](CONNECTORS.md) covers GitHub Issues, Airtable, and Tally setup.
-
-1. Sign in through `/auth/login`. A workspace is created from the verified Auth0 `sub`.
-2. Connect and verify your Nebius key in AI settings. Verification performs a small billable embedding and chat request. Pick a chat model supported by your Nebius account.
-3. Connect GitHub Issues, Airtable, or a Tally feedback form in the Evidence Library ([connector setup](CONNECTORS.md)), import CSV, enter manual evidence, or load fictional sample evidence. CSV headers: `company,domain,title,body,arr,owner,renewal`; the last three are optional. Existing account commercial details are never overwritten by an import; edit them on the account page.
-4. Process pending evidence. The app embeds and classifies bounded batches, persists progress, and allows retries. Processing requires the workspace key.
-5. Review signals and original quotes, update account details, and ask questions or run hybrid search. Save useful questions and create revocable public links to the question text only.
-
-`bun run db:seed` requires `SEED_AUTH0_SUB` for the intended owner. It imports sample evidence idempotently and does not make AI calls. The UI sample-import action is also available after login.
-
-## Architecture
-
-- Auth0 sessions and MCP JWTs establish identity. Every data query is constrained by workspace membership. Public page fixtures never come from another user's database.
-- The typed repository uses parameterized libSQL queries. Composite foreign keys enforce tenant consistency between related rows. SQL is used directly for vector and FTS functionality, without an ORM abstraction.
-- AES-256-GCM protects Nebius keys, with random nonces and workspace-bound authenticated data. The 64-character hexadecimal `KEY_ENCRYPTION_SECRET` must be backed up. Changing it requires reconnecting keys or an explicit re-encryption migration. Key values never appear in API responses or client props.
-- Every production AI entry point loads the workspace's verified key. No environment-level AI key or fallback provider is supported. Usage events record operation, model, returned token count, and completion status without prompts or keys. Nebius remains the billing authority.
-- Retrieval combines tenant-filtered native cosine ranking with FTS5 through reciprocal rank fusion. A vector index is provisioned, but v1 deliberately uses exact tenant-scoped distance ranking to avoid cross-tenant ANN recall loss. Storage is capped at 500 documents per workspace.
-- Model outputs are treated as untrusted. Detected signals and answer citations must contain exact substrings of retrieved source chunks. Quotes are validated; this does not prove that every generated interpretation is correct. Health is a heuristic: 75 baseline, minus 15 per open risk signal, plus 5 per open expansion signal, clamped to 0–100.
-- Imports are atomic; processing uses per-workspace leases, persisted embeddings, and retryable chunk states. Provider requests have timeouts. Database-backed rate limits apply across server instances.
-- Public sharing exposes only the explicitly shared question text, never answers or source evidence. Links can be revoked. The owner must review question text before sharing.
-
-## Tally integration
-
-Workspace owners can connect one Tally form through `/api/integrations/tally`. `/api/webhooks/tally/[id]` receives HMAC-SHA256 signed submissions without a browser session. Form ID and connection-derived workspace scope are checked before import; the receipt and evidence commit in the same transaction. Retries cannot duplicate a submission. Signing secrets are generated once, encrypted with workspace- and connector-bound AES-GCM, and never returned by status reads. Disconnecting invalidates the secret and preserves evidence and replay receipts.
-
-Tally submissions use the existing text ingestion path and appear as `Tally: <form ID>` sources. Only Company, Company domain, Feedback, and optional Title are imported. No attachments, extra answers, or token-bearing Tally preview URLs are retained. Incoming requests queue evidence without calling AI; existing workspace-key processing and cron handle it later. Migration `004_tally_integration.sql` is required. See [TALLY_SETUP.md](TALLY_SETUP.md) for public HTTPS setup and a real-submission checklist.
-
-## MCP
-
-`/api/mcp` implements stateless Streamable HTTP using the official MCP SDK. Tools: `search_evidence` (BYOK query embedding), `account_overview`, `list_accounts`, and `get_source`. Clients supply an Auth0 user access token with the configured `AUTH0_AUDIENCE` and `read:insights` scope. RS256 signature, issuer, audience, subject, issued-at, expiry and scope are validated. Machine client credentials are not accepted as user identities. Optional `x-workspace-id` is membership checked. OAuth protected-resource metadata is served at `/.well-known/oauth-protected-resource`. Browser login requests only OpenID identity scopes and does not depend on the external MCP API audience.
-
-Use an Auth0 public/native OAuth client with Authorization Code + PKCE to obtain a user token for external MCP clients. Register client callbacks explicitly in Auth0; dynamic client registration is not implemented. MCP does not reuse `CRON_SECRET` or browser session cookies as bearer tokens.
-
-## Checks
-
-```sh
-bun test
-bun run typecheck
-bun run build
-```
-
-The integration suite uses a real local libSQL database with native vectors/FTS and a deterministic Nebius transport fixture. It tests ingestion, processing, cited answers, encryption, Auth0 identity mapping, JWT validation, cross-workspace authorization, rate limiting, payload limits, deletion, and error handling. Real Auth0 callbacks and real Nebius billing/model availability require configured service accounts.
-
-`bun run check:env` validates production configuration without showing secret values. Use `--local` to permit localhost and a local database. `bun run check:services` makes read-only Auth0 discovery and Turso schema/vector/FTS/migration-checksum checks. It does not validate client credentials, browser callbacks, or make AI requests. `/api/health` returns 200 when configuration and database readiness pass, otherwise 503; it does not claim that an interactive Auth0 login or Nebius request has succeeded.
-
-Vercel runs `bun run build:deploy`, which refuses incomplete production configuration. Other hosts must set `APP_ENV=production` and use that build command. Local `bun run build` remains credential-free for CI. Neither a build nor environment validation substitutes for live testing.
-
-## Deployment
-
-The target host is **Vercel**. Import [Studio1-OSS/revenue-intelligence](https://github.com/Studio1-OSS/revenue-intelligence), select Next.js, and use the repository root as Root Directory. Keep the commands defined in `vercel.json`.
-
-Environment setup can be completed later, but the configured production build intentionally fails until required variables are supplied. Importing this repository alone does not launch a working public service. Do not disable that validation to expose an unconfigured dashboard.
-
-When ready:
-
-1. Add the production values from `.env.example` in Vercel's Environment Variables. Use a hosted Turso **libSQL** database, not `file:local.db`. No shared `NEBIUS_API_KEY` is required.
-2. Set `NEXT_PUBLIC_APP_URL` to the canonical HTTPS origin. Register that origin in Auth0 for logout and web origins, and `<APP_URL>/auth/callback` for callbacks.
-3. Run `bun run db:migrate` with production database credentials, then `bun run check:services`. Migrations do not run automatically during Vercel builds.
-4. Deploy or redeploy and complete the live login, BYOK, import, processing, and isolation checks in [DEPLOYMENT.md](DEPLOYMENT.md).
-
-Keep preview services separate from production. Never commit `.env.local` or tokens. Rotate credentials previously shared in messages before public launch. Back up `KEY_ENCRYPTION_SECRET` securely; changing it without re-encryption makes saved provider keys unusable.
-
-The included cron processes a small daily batch. For immediate prototype runs, use **Process evidence** in the Evidence Library. Review scheduler capacity and function duration before accepting sustained imports.
+Run checks with `bun test`, `bun run typecheck`, and `bun run build`.
 
 ## License
 
-[MIT](LICENSE), as specified by this repository. Dependency licenses remain with their respective authors. Demo company names do not imply affiliation or endorsement.
-
-Official integration references: [Auth0 Next.js](https://auth0.com/docs/quickstart/webapp/nextjs), [Auth0 agent skill](https://github.com/auth0/agent-skills/tree/main/plugins/auth0/skills/auth0), [Nebius embeddings](https://docs.tokenfactory.nebius.com/api-reference/examples/create-embeddings), [Turso vectors](https://docs.turso.tech/features/ai-and-embeddings).
+[MIT](LICENSE).

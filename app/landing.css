@@ -146,6 +146,36 @@
   border-bottom: 1px solid #777e70;
   padding: 10px 0;
 }
+.token-factory-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 4px 10px 4px 4px;
+  max-width: 100%;
+  min-height: 48px;
+  border: 1px solid #dce3d6;
+  border-radius: 8px;
+  background: #fff;
+  color: #293322;
+  font-size: 13px;
+  text-decoration: none;
+}
+.token-factory-cta img {
+  flex-shrink: 0;
+  border-radius: 5px;
+}
+.token-factory-cta > svg {
+  flex-shrink: 0;
+}
+.token-factory-cta:hover {
+  border-color: #426b26;
+  background: #f5f9ef;
+}
+.token-factory-cta:focus-visible {
+  outline: 2px solid #426b26;
+  outline-offset: 4px;
+}
 .hero-footnote {
   display: flex;
   align-items: center;

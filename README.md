@@ -28,7 +28,7 @@ Import GitHub issues, Airtable records, Tally responses, CSV files, or notes. Re
 - Workspace-scoped MCP tools for external AI assistants.
 - Server-side encrypted AI keys and workspace-isolated data.
 
-**Prototype:** live deployment checks are still required. Workspaces are personal; team invitations are not included. Demo company names are real, but all conversations and commercial figures are synthetic and imply no endorsement.
+**Prototype:** workspaces are personal; team invitations are not included. Demo company names are real, but all conversations and commercial figures are synthetic and imply no endorsement.
 
 ## Get Started
 
@@ -40,7 +40,7 @@ cp .env.example .env.local
 bun run dev
 ```
 
-Use Node.js 22+ and Bun. Open [localhost:3000](http://localhost:3000) for the landing page or `/demo` for the read-only sample workspace. Real workspaces require Auth0 configuration and database migrations. Add your Nebius key in **Nebius AI key**, import evidence, then select **Process evidence**.
+Use Node.js 22.x and Bun 1.4.0. Open [localhost:3000](http://localhost:3000) for the landing page or `/demo` for the read-only sample workspace. Real workspaces require Auth0 configuration and database migrations. Add your Nebius key in **Nebius AI key**, import evidence, then select **Process evidence**.
 
 ## Documentation
 
@@ -48,7 +48,7 @@ Use Node.js 22+ and Bun. Open [localhost:3000](http://localhost:3000) for the la
 - [Connector setup](CONNECTORS.md)
 - [Vercel deployment, environment variables, and launch checklist](DEPLOYMENT.md)
 
-Vercel environment variables can be added later, but the production build requires them before deployment can succeed. Never commit `.env.local` or provider tokens.
+To deploy on Vercel, configure the required environment variables and apply the Turso migrations using the [deployment guide](DEPLOYMENT.md). Keep `.env.local` and provider tokens out of version control.
 
 Run checks with `bun test`, `bun run typecheck`, and `bun run build`.
 

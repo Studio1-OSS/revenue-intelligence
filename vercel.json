@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "installCommand": "bun install --frozen-lockfile",
+  "buildCommand": "bun run build:deploy",
+  "crons": [{ "path": "/api/cron/embed-pending", "schedule": "0 3 * * *" }]
+}

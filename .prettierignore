@@ -1,0 +1,6 @@
+node_modules
+.next
+bun.lock
+*.db
+db/migrations
+public

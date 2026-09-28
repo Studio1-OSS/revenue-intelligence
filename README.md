@@ -6,7 +6,7 @@ Import GitHub issues, Airtable records, Tally responses, CSV files, notes, or vi
 
 [<img src="public/token-factory.png" width="48" height="48" alt="Token Factory">](https://dub.sh/aistudio)
 
-**[Powered by Nebius Token Factory](https://dub.sh/aistudio)**. Bring your own AI key; each workspace's AI usage is billed to its Nebius account.
+**[Powered by Nebius Token Factory](https://dub.sh/aistudio)**.
 
 ## Stack
 

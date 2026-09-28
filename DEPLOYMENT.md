@@ -8,7 +8,7 @@ With no Auth0, Turso, encryption, or cron configuration, Vercel builds the landi
 
 ## Current release status
 
-The application has real server-side Auth0 sessions, libSQL persistence, encrypted workspace BYOK, processing, retrieval, chat, and MCP implementations. On 2026-09-07, the configured Turso Cloud database passed connection, all three migration checksums, native vector, and FTS readiness checks. It was initialized empty, with no demo records. Auth0 settings are configured locally; tenant discovery and the app-to-Universal-Login redirect passed, with email/password and Google sign-in offered. Interactive login, callback token exchange (including client-secret validation), workspace creation, Nebius calls, and public deployment remain unverified. Do not open public signup until the live acceptance checklist below passes.
+The application has real server-side Auth0 sessions, libSQL persistence, encrypted workspace BYOK, processing, retrieval, chat, and an inactive MCP developer-preview route. On 2026-09-07, the configured Turso Cloud database passed connection, all three migration checksums, native vector, and FTS readiness checks. It was initialized empty, with no demo records. Auth0 settings are configured locally; tenant discovery and the app-to-Universal-Login redirect passed, with email/password and Google sign-in offered. Interactive login, callback token exchange (including client-secret validation), workspace creation, Nebius calls, and public deployment remain unverified. Do not open public signup until the live acceptance checklist below passes.
 
 Public fictional records are isolated at `/demo`. All normal workspace pages require authentication. New users receive an empty persisted personal workspace, not the fictional dashboard. A sample import is optional and explicitly initiated by the signed-in user.
 
@@ -35,6 +35,7 @@ Set production values in Vercel's environment settings. Keep preview environment
 | `AUTH0_CLIENT_SECRET`   | Application secret                                          |
 | `AUTH0_SECRET`          | Independent `openssl rand -hex 32` value                    |
 | `AUTH0_AUDIENCE`        | Auth0 API identifier for MCP, optional for browser-only use |
+| `MCP_FEATURE_ENABLED`   | `true` only after MCP Auth0/client testing; otherwise `false` |
 | `TURSO_DATABASE_URL`    | Turso Cloud libSQL URL                                      |
 | `TURSO_AUTH_TOKEN`      | Database application token                                  |
 | `KEY_ENCRYPTION_SECRET` | Independent `openssl rand -hex 32` value; back up securely  |
@@ -63,12 +64,12 @@ For an upgrade, pause processing and drain in-flight AI requests before applying
 - [ ] Sign up with a new Auth0 user, complete the callback, refresh, and log out. Confirm an empty personal workspace is persisted after login.
 - [ ] Repeat with a second user; verify the users cannot retrieve each other's accounts, sources, chat threads, or keys even with explicit IDs and `x-workspace-id` headers.
 - [ ] Before connecting a key, AI endpoints return `AI_KEY_REQUIRED`. Add a Nebius key in `/settings/ai`; confirm embedding and selected chat model verification completes.
-- [ ] Verify Qwen3.8-27B and both Nemotron choices with a real key, including the US Central endpoint for Super. Confirm Qwen returns non-empty structured output with thinking disabled. Switch using the saved key and confirm failed verification leaves the previous setting unchanged. Qwen embeddings always use the global endpoint, not the Super region; confirm this routing meets your data handling requirements. The app currently accepts text evidence only, not image/video inputs.
+- [ ] Verify Qwen3.8-27B and both Nemotron choices with a real key, including the US Central endpoint for Super. Confirm Qwen returns non-empty structured output with thinking disabled. Switch using the saved key and confirm failed verification leaves the previous setting unchanged. Qwen embeddings always use the global endpoint, not the Super region; confirm this routing meets your data handling requirements. Visual evidence extraction currently accepts PNG, JPEG, and WebP images; export PDF pages and slides as images before upload.
 - [ ] Import a small real CSV, process all chunks, read a detected signal and source quote, search, and ask a cited question. Confirm usage in the workspace and Nebius account.
 - [ ] Apply migration `004_tally_integration.sql`, connect a published Tally form with a signing secret and public HTTPS endpoint, submit real feedback, and confirm one pending evidence document. Retry the same event from Tally's log and confirm no duplicate. Process it with the workspace's key. See [TALLY_SETUP.md](TALLY_SETUP.md).
 - [ ] Apply migration `005_external_sources.sql`. Connect a public GitHub repository without a token, a private repository with a restricted token, and an Airtable table with a read-only token. Test pagination, repeated sync, changed feedback, disconnect, and source links. Confirm no AI calls occur until processing. See [CONNECTORS.md](CONNECTORS.md).
 - [ ] Unauthenticated data APIs return 401, cross-origin mutations return 403, invalid cron and MCP tokens return 401.
-- [ ] Connect an MCP client with a real Auth0 user access token and `read:insights`; test all four tools against that user's workspace.
+- [ ] Keep `MCP_FEATURE_ENABLED=false` for launch, or connect an MCP client with a real Auth0 user access token and `read:insights`; test all four tools against that user's workspace before enabling.
 - [ ] Create and revoke a shared-question link. Confirm the link exposes only the explicitly shared question, not sources or answers.
 - [ ] Configure monitoring for `/api/health`, function failures and processing backlog. Verify a Turso restore procedure and back up the encryption secret before accepting customer data.
 - [ ] Review public privacy/retention terms, Auth0 signup/verification and abuse controls, service limits, and expected hosting costs for your launch audience.
@@ -81,7 +82,7 @@ For sustained production imports, use a scheduler every five minutes (subject to
 
 ## Operational limits
 
-- 2 MB CSV uploads, 100 rows and 250 chunks per import, 20,000 characters per document, 500 documents per workspace.
+- 2 MB CSV uploads, 100 rows and 250 chunks per import, 5 MB visual image uploads, 20,000 characters per document, 500 documents per workspace.
 - Workspace database rate limits cover chat, search, imports, key verification, saved questions and processing.
 - Tally webhooks accept up to 100 KB and 60 signed deliveries/minute per connection. They queue evidence without making AI calls. The form is not live-verified until a signed submission is persisted; configure a public HTTPS endpoint before testing external delivery.
 - Key disconnection stops new AI jobs. An already-running provider request may complete. Losing the encryption secret makes stored keys unusable.

@@ -40,6 +40,12 @@ export async function verifyBearer(
   }
 }
 export async function mcpContext(request: Request) {
+  if (process.env.MCP_FEATURE_ENABLED !== "true")
+    throw new AppError(
+      "MCP_COMING_SOON",
+      "MCP access is coming soon.",
+      503,
+    );
   const authorization = request.headers.get("authorization");
   if (!authorization?.startsWith("Bearer "))
     throw new AppError(

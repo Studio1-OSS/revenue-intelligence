@@ -83,6 +83,7 @@ export default async function Demo({
             <MCPSettings
               endpoint={`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/mcp`}
               configured={false}
+              enabled={false}
             />
           )}
         </>

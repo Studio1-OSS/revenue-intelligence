@@ -103,7 +103,8 @@ export async function rows<T>(
   args: InValue[],
   db = database(),
 ): Promise<T[]> {
-  return (await db.execute({ sql, args })).rows as unknown as T[];
+  const result = await db.execute({ sql, args });
+  return result.rows.map((row) => ({ ...row })) as unknown as T[];
 }
 export async function snapshot(
   ctx: WorkspaceContext,

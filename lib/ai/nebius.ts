@@ -18,6 +18,12 @@ const chatEndpoints: Record<ChatModel, string> = {
 const usage = z
   .object({ total_tokens: z.number().int().nonnegative().optional() })
   .optional();
+type UserContent =
+  | string
+  | Array<
+      | { type: "text"; text: string }
+      | { type: "image_url"; image_url: { url: string; detail?: "low" | "high" } }
+    >;
 export class Nebius {
   public readonly model: ChatModel;
   constructor(
@@ -127,11 +133,32 @@ export class Nebius {
       tokens: parsed.data.usage?.total_tokens || 0,
     };
   }
-  async complete(
+  private chatBody(
     system: string,
-    input: string,
-    jsonMode = true,
-    maxTokens = 1600,
+    input: UserContent,
+    jsonMode: boolean,
+    maxTokens: number,
+  ) {
+    return {
+      model: this.model,
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: input },
+      ],
+      temperature: 0.2,
+      max_tokens: maxTokens,
+      // Reserve the bounded output budget for the answer, not reasoning.
+      ...(this.model === "Qwen/Qwen3.8-27B"
+        ? { chat_template_kwargs: { enable_thinking: false } }
+        : {}),
+      ...(jsonMode ? { response_format: { type: "json_object" } } : {}),
+    };
+  }
+  private async chat(
+    system: string,
+    input: UserContent,
+    jsonMode: boolean,
+    maxTokens: number,
   ) {
     const result = z
       .object({
@@ -147,20 +174,7 @@ export class Nebius {
       .safeParse(
         await this.request(
           "chat/completions",
-          {
-            model: this.model,
-            messages: [
-              { role: "system", content: system },
-              { role: "user", content: input },
-            ],
-            temperature: 0.2,
-            max_tokens: maxTokens,
-            // Reserve the bounded output budget for the answer, not reasoning.
-            ...(this.model === "Qwen/Qwen3.8-27B"
-              ? { chat_template_kwargs: { enable_thinking: false } }
-              : {}),
-            ...(jsonMode ? { response_format: { type: "json_object" } } : {}),
-          },
+          this.chatBody(system, input, jsonMode, maxTokens),
           chatEndpoints[this.model],
         ),
       );
@@ -174,5 +188,39 @@ export class Nebius {
       text: result.data.choices[0].message.content,
       tokens: result.data.usage?.total_tokens || 0,
     };
+  }
+  async complete(
+    system: string,
+    input: string,
+    jsonMode = true,
+    maxTokens = 1600,
+  ) {
+    return this.chat(system, input, jsonMode, maxTokens);
+  }
+  async completeImage(
+    system: string,
+    input: string,
+    image: { dataUrl: string; detail?: "low" | "high" },
+    jsonMode = true,
+    maxTokens = 2200,
+  ) {
+    if (this.model !== "Qwen/Qwen3.8-27B")
+      throw new AppError(
+        "AI_MODEL_REQUIRED",
+        "Visual evidence extraction requires Qwen3.8 27B in AI settings.",
+        409,
+      );
+    return this.chat(
+      system,
+      [
+        { type: "text", text: input },
+        {
+          type: "image_url",
+          image_url: { url: image.dataUrl, detail: image.detail || "high" },
+        },
+      ],
+      jsonMode,
+      maxTokens,
+    );
   }
 }

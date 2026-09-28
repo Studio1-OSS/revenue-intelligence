@@ -6,6 +6,7 @@ import Link from "next/link";
 import {
   Download,
   FileText,
+  Image as ImageIcon,
   LoaderCircle,
   Play,
   Plus,
@@ -67,6 +68,23 @@ export function DataSettings({
         if (file.current) file.current.value = "";
         return `${result.documents} documents imported. Ready for AI processing.`;
       }
+      if (mode === "visual") {
+        if (!selectedFile) throw new Error("Choose an image file.");
+        if (selectedFile.size > 5_000_000)
+          throw new Error("Choose an image smaller than 5 MB.");
+        const fields = new FormData(form.current!);
+        fields.set("image", selectedFile);
+        const response = await fetch("/api/uploads", {
+          method: "POST",
+          body: fields,
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message);
+        setSelectedFile(null);
+        form.current?.reset();
+        if (file.current) file.current.value = "";
+        return `${result.documents} visual document extracted. Process evidence to embed it and detect signals.`;
+      }
       const fields = new FormData(form.current!);
       const result = await api<{ documents: number }>(
         "/api/uploads",
@@ -122,14 +140,22 @@ export function DataSettings({
             <h2>Add customer evidence</h2>
           </div>
           <div className="segmented">
-            {["csv", "manual"].map((m) => (
+            {["csv", "visual", "manual"].map((m) => (
               <button
                 key={m}
                 disabled={busy}
-                onClick={() => setMode(m)}
+                onClick={() => {
+                  setMode(m);
+                  setSelectedFile(null);
+                  if (file.current) file.current.value = "";
+                }}
                 aria-pressed={mode === m}
               >
-                {m === "csv" ? "CSV upload" : "Manual evidence"}
+                {m === "csv"
+                  ? "CSV upload"
+                  : m === "visual"
+                    ? "Visual evidence"
+                    : "Manual evidence"}
               </button>
             ))}
           </div>
@@ -161,6 +187,93 @@ export function DataSettings({
                   <Download size={15} />
                   Download CSV template
                 </a>
+              </>
+            ) : mode === "visual" ? (
+              <>
+                <div className="form-two">
+                  <label>
+                    Company
+                    <input
+                      name="company"
+                      placeholder="Shopify"
+                      required
+                      maxLength={120}
+                      disabled={demo || busy}
+                    />
+                  </label>
+                  <label>
+                    Company domain
+                    <input
+                      name="domain"
+                      placeholder="shopify.com"
+                      required
+                      maxLength={253}
+                      disabled={demo || busy}
+                    />
+                  </label>
+                </div>
+                <label>
+                  Evidence title
+                  <input
+                    name="title"
+                    placeholder="QBR chart screenshot"
+                    required
+                    maxLength={200}
+                    disabled={demo || busy}
+                  />
+                </label>
+                <label className="drop-zone">
+                  <span className="upload-symbol">
+                    <ImageIcon size={22} strokeWidth={1.5} />
+                  </span>
+                  <strong>
+                    {selectedFile
+                      ? selectedFile.name
+                      : "Choose a screenshot, chart, slide, or document image"}
+                  </strong>
+                  <span>PNG, JPEG, or WebP · 5 MB maximum</span>
+                  <input
+                    ref={file}
+                    name="image"
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    onChange={(e) =>
+                      setSelectedFile(e.target.files?.[0] || null)
+                    }
+                    disabled={demo || busy || !data.key}
+                    aria-label="Choose visual evidence image"
+                  />
+                </label>
+                <small>
+                  Qwen3.8 reads the image and creates a text evidence document.
+                  PDFs and decks should be exported as images first.
+                </small>
+                <div className="form-two">
+                  <label>
+                    Annual revenue (USD)
+                    <input
+                      type="number"
+                      name="arr"
+                      min={0}
+                      max={1_000_000_000}
+                      defaultValue={0}
+                      disabled={demo || busy}
+                    />
+                  </label>
+                  <label>
+                    Renewal date
+                    <input type="date" name="renewal" disabled={demo || busy} />
+                  </label>
+                </div>
+                <label>
+                  Account owner
+                  <input name="owner" maxLength={120} disabled={demo || busy} />
+                </label>
+                {!data.key && (
+                  <p className="form-message">
+                    Connect a Nebius key before importing visual evidence.
+                  </p>
+                )}
               </>
             ) : (
               <>
@@ -233,7 +346,12 @@ export function DataSettings({
             )}
             <button
               className="button primary"
-              disabled={demo || busy || (mode === "csv" && !selectedFile)}
+              disabled={
+                demo ||
+                busy ||
+                ((mode === "csv" || mode === "visual") && !selectedFile) ||
+                (mode === "visual" && !data.key)
+              }
             >
               {busy ? (
                 <LoaderCircle size={17} className="spin" />

@@ -133,8 +133,8 @@ export function Landing({ authConfigured }: { authConfigured: boolean }) {
             </div>
             <p>
               Spot renewal risk, expansion intent, and competitive pressure in
-              customer conversations. Then go straight to the words behind the
-              finding.
+              conversations, issues, forms, and visual evidence. Then go
+              straight to the source behind the finding.
             </p>
           </div>
           <p className="demo-disclaimer">{DEMO_DISCLAIMER}</p>
@@ -225,7 +225,7 @@ export function Landing({ authConfigured }: { authConfigured: boolean }) {
                 n: "01",
                 icon: Upload,
                 title: "Collect the conversation",
-                body: "Connect GitHub Issues, Airtable, or Tally. Bring customer feedback into one account history.",
+                body: "Connect GitHub Issues, Airtable, or Tally. Bring customer feedback, form responses, screenshots, and notes into one account history.",
               },
               {
                 n: "02",
@@ -298,11 +298,10 @@ export function Landing({ authConfigured }: { authConfigured: boolean }) {
               <span>
                 <strong>Context for your agents</strong>
                 <small>
-                  Search evidence and retrieve account context through
-                  authenticated MCP.
+                  MCP access for external agents is in developer preview.
                 </small>
                 <Link href="/demo/settings/mcp">
-                  Explore MCP access <ArrowUpRight size={14} />
+                  Preview MCP access <ArrowUpRight size={14} />
                 </Link>
               </span>
               <span className="control-number">03</span>
@@ -319,7 +318,7 @@ export function Landing({ authConfigured }: { authConfigured: boolean }) {
             {[
               {
                 q: "What can I import?",
-                a: "Connect GitHub Issues or an Airtable feedback table, receive Tally form responses, upload CSV files, or add notes manually. GitHub and Airtable imports run when you sync; Tally receives new responses through a signed webhook. Process imported evidence using your workspace's Nebius key.",
+                a: "Connect GitHub Issues or an Airtable feedback table, receive Tally form responses, upload CSV files, add notes manually, or extract evidence from PNG, JPEG, and WebP screenshots of charts, dashboards, docs, and slides. GitHub and Airtable imports run when you sync; Tally receives new responses through a signed webhook. Process imported evidence using your workspace's Nebius key.",
               },
               {
                 q: "Can I explore without an AI key?",

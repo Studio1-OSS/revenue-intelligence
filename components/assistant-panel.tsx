@@ -1,6 +1,6 @@
 "use client";
 import { workspacePath } from "@/lib/workspace-path";
-import { useReducer, useRef, useState } from "react";
+import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -21,7 +21,11 @@ import {
   assistantReducer,
   initialAssistantState,
   type EvidenceAnswer,
+  type AssistantState,
 } from "@/lib/assistant-state";
+type AssistantMode = "ask" | "search";
+const modes = new Set<AssistantMode>(["ask", "search"]);
+
 export function AssistantPanel({
   demo,
   connected,
@@ -34,15 +38,57 @@ export function AssistantPanel({
   queries: SavedQuery[];
 }) {
   const [query, setQuery] = useState(""),
-    [mode, setMode] = useState("ask"),
+    [mode, setMode] = useState<AssistantMode>("ask"),
     [saved, setSaved] = useState(false),
     [copied, setCopied] = useState("");
   const [state, dispatch] = useReducer(assistantReducer, initialAssistantState);
   const { busy, error, answer, hits } = state;
   const [saving, setSaving] = useState(false);
+  const [restored, setRestored] = useState(false);
   const requestActive = useRef(false);
+  const continuingAsk = mode === "ask" && Boolean(state.threadId);
+  const storageKey = useMemo(
+    () =>
+      `revenue-intelligence:assistant:${demo ? "demo" : "workspace"}:${domain || "portfolio"}`,
+    [demo, domain],
+  );
   const setError = (message: string) => dispatch({ type: "notice", message });
   const router = useRouter();
+  useEffect(() => {
+    try {
+      const raw = window.sessionStorage.getItem(storageKey);
+      if (raw) {
+        const cached = JSON.parse(raw) as {
+          query?: unknown;
+          mode?: unknown;
+          state?: AssistantState;
+        };
+        if (typeof cached.query === "string") setQuery(cached.query);
+        if (
+          typeof cached.mode === "string" &&
+          modes.has(cached.mode as AssistantMode)
+        )
+          setMode(cached.mode as AssistantMode);
+        if (cached.state) dispatch({ type: "hydrate", state: cached.state });
+      }
+    } catch {
+      window.sessionStorage.removeItem(storageKey);
+    } finally {
+      setRestored(true);
+    }
+  }, [storageKey]);
+  useEffect(() => {
+    if (!restored) return;
+    const cacheableState = {
+      ...state,
+      busy: false,
+      error: state.busy ? "" : state.error,
+    };
+    window.sessionStorage.setItem(
+      storageKey,
+      JSON.stringify({ query, mode, state: cacheableState }),
+    );
+  }, [mode, query, restored, state, storageKey]);
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     if (demo || !connected || requestActive.current || saving) return;
@@ -52,17 +98,19 @@ export function AssistantPanel({
     dispatch({ type: "start", mode });
     setSaved(false);
     try {
-      if (mode === "ask")
+      if (mode === "ask") {
+        const result = await api<EvidenceAnswer>("/api/chat", {
+          query: submittedQuery,
+          domain,
+          threadId: state.threadId || undefined,
+        });
         dispatch({
           type: "answer",
           query: submittedQuery,
-          result: await api<EvidenceAnswer>("/api/chat", {
-            query: submittedQuery,
-            domain,
-            threadId: state.threadId || undefined,
-          }),
+          result,
         });
-      else
+        setQuery("");
+      } else
         dispatch({
           type: "search",
           query: submittedQuery,
@@ -133,7 +181,7 @@ export function AssistantPanel({
             aria-pressed={mode === "ask"}
           >
             <MessageSquare size={14} />
-            Ask
+            Ask answers
           </button>
           <button
             disabled={busy || saving}
@@ -141,10 +189,17 @@ export function AssistantPanel({
             aria-pressed={mode === "search"}
           >
             <Search size={14} />
-            Search
+            Find sources
           </button>
         </div>
       </div>
+      <p className="assistant-mode-note">
+        {mode === "ask"
+          ? continuingAsk
+            ? "Continuing the same cited conversation. Use New conversation to reset context."
+            : "Ask creates a cited answer from your processed evidence."
+          : "Find sources returns matching evidence records without generating an answer."}
+      </p>
       {!connected && (
         <div className="key-notice">
           <KeyRound size={18} />
@@ -162,9 +217,11 @@ export function AssistantPanel({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={
-            domain
-              ? "What should we discuss at the next account review?"
-              : "Which renewals need attention, and why?"
+            continuingAsk
+              ? "Ask a follow-up about this answer..."
+              : domain
+                ? "What should we discuss at the next account review?"
+                : "Which renewals need attention, and why?"
           }
           minLength={2}
           maxLength={2000}
@@ -173,8 +230,20 @@ export function AssistantPanel({
         />
         <button
           className="button primary square"
-          title={mode === "ask" ? "Ask question" : "Search evidence"}
-          aria-label={mode === "ask" ? "Ask question" : "Search evidence"}
+          title={
+            mode === "ask"
+              ? continuingAsk
+                ? "Ask follow-up"
+                : "Ask question"
+              : "Find sources"
+          }
+          aria-label={
+            mode === "ask"
+              ? continuingAsk
+                ? "Ask follow-up"
+                : "Ask question"
+              : "Find sources"
+          }
           disabled={demo || !connected || busy || saving}
         >
           {busy ? (

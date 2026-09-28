@@ -1,5 +1,7 @@
 import { json } from "@/lib/http";
 export async function GET() {
+  if (process.env.MCP_FEATURE_ENABLED !== "true")
+    return json({ error: "MCP_COMING_SOON" }, 503);
   if (!process.env.AUTH0_DOMAIN || !process.env.NEXT_PUBLIC_APP_URL)
     return json({ error: "MCP_NOT_CONFIGURED" }, 503);
   return json({

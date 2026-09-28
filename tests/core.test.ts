@@ -37,6 +37,9 @@ const { DEFAULT_CHAT_MODEL, CHAT_MODEL_IDS, EMBEDDING_MODEL } =
 const { workspaceAI } = await import("../lib/ai/service");
 const { processPending, parseDetection } = await import("../lib/ai/pipeline");
 const { answerQuestion, parseAnswer } = await import("../lib/ai/chat");
+const { validateVisualFile, visualExtractionToDocument } = await import(
+  "../lib/ai/visual-evidence"
+);
 const { verifyBearer } = await import("../lib/mcp-auth");
 const { sameOrigin, readBody } = await import("../lib/http");
 const uploads = await import("../app/api/uploads/route");
@@ -265,7 +268,7 @@ describe("BYOK and provider failures", () => {
       code: "AI_INVALID_EMBEDDING",
     });
   });
-  test("only the two supported models are accepted, with exact case-sensitive IDs", () => {
+  test("only supported model IDs are accepted with exact case-sensitive IDs", () => {
     expect(() => new Nebius(key, "Qwen/old-model")).toThrow();
     expect(() => new Nebius(key, "nvidia/nemotron-3_5-lightning")).toThrow();
   });
@@ -306,6 +309,33 @@ describe("BYOK and provider failures", () => {
       );
     }
   });
+  test("Qwen visual completions send image content through the global endpoint", async () => {
+    const calls: { url: string; body: Record<string, unknown> }[] = [];
+    const ai = new Nebius(key, "Qwen/Qwen3.8-27B", (async (url, init) => {
+      calls.push({ url: String(url), body: JSON.parse(String(init?.body)) });
+      return Response.json({
+        choices: [{ message: { content: '{"summary":"Visual evidence"}' } }],
+      });
+    }) as typeof fetch);
+    await ai.completeImage("Extract JSON.", "Account context", {
+      dataUrl: "data:image/png;base64,ZmFrZQ==",
+    });
+    expect(calls[0].url).toBe(
+      "https://api.tokenfactory.nebius.com/v1/chat/completions",
+    );
+    expect(calls[0].body.model).toBe("Qwen/Qwen3.8-27B");
+    expect(JSON.stringify(calls[0].body.messages)).toContain("image_url");
+    expect(calls[0].body.chat_template_kwargs).toEqual({
+      enable_thinking: false,
+    });
+    await expect(
+      new Nebius(key, "nvidia/Nemotron-3_5-Lightning").completeImage(
+        "Extract JSON.",
+        "Account context",
+        { dataUrl: "data:image/png;base64,ZmFrZQ==" },
+      ),
+    ).rejects.toMatchObject({ code: "AI_MODEL_REQUIRED" });
+  });
 });
 describe("Import and grounding", () => {
   test("CSV handles quoted commas, newlines and BOM", () => {
@@ -328,6 +358,36 @@ describe("Import and grounding", () => {
       true,
     );
     expect(chunks[0].slice(-200)).toBe(chunks[1].slice(0, 200));
+  });
+  test("visual extraction becomes bounded text evidence for the same pipeline", () => {
+    expect(() =>
+      validateVisualFile({
+        name: "report.pdf",
+        type: "application/pdf",
+        size: 10,
+      }),
+    ).toThrow();
+    const doc = visualExtractionToDocument(
+      {
+        company: "Figma",
+        domain: "figma.com",
+        title: "QBR chart",
+        arr: 0,
+        owner: "",
+        renewal: "",
+        fileName: "qbr.png",
+      },
+      JSON.stringify({
+        summary: "Dashboard screenshot shows renewal risk and adoption trend.",
+        visibleText: ["Enterprise renewal", "Usage down 18%"],
+        observations: ["A line chart slopes down during the current quarter."],
+        numbers: ["Usage down 18%"],
+        uncertainties: ["The screenshot does not show the renewal date."],
+      }),
+    );
+    expect(doc.body).toContain("AI visual extraction from qbr.png");
+    expect(doc.body).toContain("Usage down 18%");
+    expect(chunkText(doc.body).length).toBeGreaterThan(0);
   });
   test("rejects invented signal quotes and citations", () => {
     expect(() =>
@@ -621,6 +681,87 @@ describe("API boundaries", () => {
     expect(response.status).toBe(402);
     expect((await response.json()).error).toBe("AI_KEY_REQUIRED");
   });
+  test("visual evidence upload uses BYOK extraction and queues normal chunks", async () => {
+    const visualUser = {
+      sub: "auth0|visual-upload",
+      email: "visual@example.com",
+      name: "Visual",
+    };
+    sessionUser = visualUser;
+    const ctx = await resolveWorkspace(visualUser);
+    await database().execute({
+      sql: "INSERT INTO ai_provider_keys(workspace_id,ciphertext,hint,model,verified_at,updated_by) VALUES(?,?,?,?,?,?)",
+      args: [
+        ctx.workspaceId,
+        encryptKey(key, ctx.workspaceId),
+        key.slice(-4),
+        "Qwen/Qwen3.8-27B",
+        new Date().toISOString(),
+        ctx.userId,
+      ],
+    });
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async (url, init) => {
+      expect(String(url)).toBe(
+        "https://api.tokenfactory.nebius.com/v1/chat/completions",
+      );
+      const payload = JSON.parse(String(init?.body));
+      expect(payload.model).toBe("Qwen/Qwen3.8-27B");
+      expect(JSON.stringify(payload.messages)).toContain("image_url");
+      return Response.json({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                summary:
+                  "A customer dashboard screenshot shows rising support load.",
+                visibleText: ["Escalations increased"],
+                observations: [
+                  "A chart shows support volume rising in the latest period.",
+                ],
+                numbers: ["18 open escalations"],
+                uncertainties: ["The screenshot does not show ARR."],
+              }),
+            },
+          },
+        ],
+        usage: { total_tokens: 42 },
+      });
+    }) as typeof fetch;
+    try {
+      const form = new FormData();
+      form.set("company", "Canva");
+      form.set("domain", "canva.com");
+      form.set("title", "Support dashboard screenshot");
+      form.set("arr", "0");
+      form.set("owner", "");
+      form.set("renewal", "");
+      form.set(
+        "image",
+        new File(["fake-image"], "support.png", { type: "image/png" }),
+      );
+      const response = await uploads.POST(
+        new Request("http://localhost:3000/api/uploads", {
+          method: "POST",
+          headers: { origin: "http://localhost:3000" },
+          body: form,
+        }),
+      );
+      expect(response.status).toBe(201);
+      expect(await response.json()).toMatchObject({
+        documents: 1,
+        chunks: 1,
+        extracted: true,
+      });
+      const data = await snapshot(ctx);
+      expect(data.evidence[0].body).toContain("AI visual extraction");
+      expect(data.evidence[0].body).toContain("Escalations increased");
+      expect(data.pending).toBe(1);
+    } finally {
+      globalThis.fetch = originalFetch;
+      sessionUser = null;
+    }
+  });
   test("client-selected tenant IDs do not grant access", async () => {
     sessionUser = userOne;
     expect(
@@ -643,7 +784,7 @@ describe("API boundaries", () => {
       readBody(request("/api/uploads", { body: "x".repeat(1000) }), 100),
     ).rejects.toMatchObject({ code: "TOO_LARGE" });
   });
-  test("cron and MCP reject invalid authorization", async () => {
+  test("cron rejects invalid authorization and MCP is inactive by default", async () => {
     expect(validSecret(null, "x".repeat(40))).toBe(false);
     expect(
       (
@@ -652,7 +793,9 @@ describe("API boundaries", () => {
         )
       ).status,
     ).toBe(401);
-    expect((await mcp.POST(request("/api/mcp", {}))).status).toBe(401);
+    const response = await mcp.POST(request("/api/mcp", {}));
+    expect(response.status).toBe(503);
+    expect((await response.json()).error).toBe("MCP_COMING_SOON");
   });
   test("encrypted key metadata never exposes stored plaintext or ciphertext", async () => {
     sessionUser = userOne;

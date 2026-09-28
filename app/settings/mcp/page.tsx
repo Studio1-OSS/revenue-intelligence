@@ -11,6 +11,7 @@ export default async function Page() {
         configured={Boolean(
           process.env.AUTH0_DOMAIN && process.env.AUTH0_AUDIENCE,
         )}
+        enabled={process.env.MCP_FEATURE_ENABLED === "true"}
       />
     </Workspace>
   );

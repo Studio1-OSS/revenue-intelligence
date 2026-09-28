@@ -264,6 +264,12 @@
   color: var(--accent);
   white-space: nowrap;
 }
+.assistant-mode-note {
+  margin: -4px 0 12px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
 .question-form {
   display: flex;
   gap: 10px;

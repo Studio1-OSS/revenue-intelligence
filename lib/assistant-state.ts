@@ -29,7 +29,8 @@ export type AssistantAction =
   | { type: "search"; query: string; hits: SearchHit[] }
   | { type: "error"; message: string }
   | { type: "notice"; message: string }
-  | { type: "reset" };
+  | { type: "reset" }
+  | { type: "hydrate"; state: AssistantState };
 
 export function assistantReducer(
   state: AssistantState,
@@ -68,5 +69,7 @@ export function assistantReducer(
       return { ...state, error: action.message };
     case "reset":
       return initialAssistantState;
+    case "hydrate":
+      return { ...action.state, busy: false };
   }
 }

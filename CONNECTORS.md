@@ -1,4 +1,4 @@
-# Prototype Connectors
+# Connectors
 
 ## Available now
 
@@ -9,7 +9,26 @@
 | Airtable      | Company, Company domain, Feedback, optional Title   | Personal access token with read access to one base                          | Owner selects Sync |
 | CSV / manual  | Customer evidence and optional account fields       | Signed-in workspace                                                         | Import             |
 
-Other API connectors are not implemented. Spreadsheets exported as CSV work with the existing upload.
+Other API connectors can be added by mapping provider records into the same evidence document shape. Spreadsheets exported as CSV work with the existing upload.
+
+## Enterprise connector roadmap
+
+The current connectors are enough for prototypes, early pilots, and teams that can export support/customer data manually. Production RevOps and customer-success deployments usually need direct sync from the systems where customer activity already lives.
+
+High-value next connectors:
+
+| System     | Why it matters                                                     |
+| ---------- | ------------------------------------------------------------------ |
+| Zendesk    | Support tickets, escalations, CSAT signals, customer pain points   |
+| HubSpot    | Deals, companies, notes, lifecycle stage, renewal context          |
+| Slack      | Customer channels, implementation updates, informal risk signals   |
+| Salesforce | Enterprise CRM accounts, opportunities, renewals, account owners   |
+| Intercom   | Support conversations, user feedback, onboarding/friction signals  |
+| Linear     | Product feedback, customer-reported issues, feature requests       |
+| Jira       | Enterprise implementation tasks, issue escalation, delivery status |
+| Help Scout | Support conversations for smaller teams                            |
+
+Each connector should normalize external records into evidence documents with a company name, company domain, title, body, optional ARR, owner, and renewal date. Once records become evidence, the existing pipeline handles chunking, embeddings, search, signal detection, and cited answers.
 
 ## GitHub setup
 
@@ -38,7 +57,7 @@ Create a table with plain-text fields using these exact names:
 
 Use plain text, not linked records or arrays. Extra fields are ignored during import; attachments are not downloaded. An invalid row rejects its entire batch rather than silently omitting that customer's feedback. Correct the row and retry.
 
-Create a personal access token with **data.records:read**, granting access only to this base. Obtain the `app...` base ID and `tbl...` table ID from the base/table URL. Enter both IDs and the token under **Airtable** in Evidence Library, verify, and sync. No schema-write, record-write, or billing permissions are needed. The prototype does not require OAuth setup or a public webhook URL for this manual pull.
+Create a personal access token with **data.records:read**, granting access only to this base. Obtain the `app...` base ID and `tbl...` table ID from the base/table URL. Enter both IDs and the token under **Airtable** in Evidence Library, verify, and sync. No schema-write, record-write, or billing permissions are needed. This connector uses manual pull sync, so Airtable OAuth and a public webhook URL are not required.
 
 Airtable's free plan permits 1,000 API calls per workspace per month; setup verification and every sync batch each consume a call. The API also limits requests per base. These are provider limits, not an unlimited free allowance. Official references: [API and pagination](https://support.airtable.com/articles/6292134965-getting-started-with-airtable-s-web-api), [token permissions](https://support.airtable.com/articles/9934989703-creating-personal-access-tokens), [API limits](https://support.airtable.com/articles/7735693959-managing-api-call-limits-in-airtable).
 
@@ -62,4 +81,4 @@ See [TALLY_SETUP.md](TALLY_SETUP.md). The connector already exists. Unlike the m
 
 Automated tests use isolated databases and deterministic API responses. Before real users, verify a completed Auth0 session, one public repository, one restricted private repository/token, one Airtable table, a Tally delivery, and Nebius processing with the actual intended accounts. Do not publish customer information or make an Airtable base public to avoid token setup.
 
-For a public SaaS release, GitHub App installations and Airtable OAuth would offer better onboarding and credential lifecycle management than manually pasted tokens. They are not part of this prototype.
+For a larger SaaS release, GitHub App installations and Airtable OAuth would offer better onboarding and credential lifecycle management than manually pasted tokens. They are natural next steps for teams extending this template.

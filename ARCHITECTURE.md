@@ -27,7 +27,7 @@ Browser (Next.js dashboard)
                 v
            Nebius, using that workspace's encrypted API key
            Qwen embeddings: make meaning-based search possible
-           Nemotron: identify supported signals and answer questions
+           Qwen / selected chat model: identify supported signals and answer questions
                 |
                 v
            Turso: vectors, signals, citations, usage records
@@ -46,13 +46,13 @@ Optional external AI client --> Auth0 user access token --> MCP tools
 2. Open Evidence Library. Connect a GitHub repository, an Airtable table, or a Tally form; alternatively import a CSV or paste a note. Connector credentials are separate from the AI key.
 3. GitHub and Airtable owners press **Sync**. Each click reads up to 20 source records. **Sync next batch** continues a scan; after completion, **Sync** starts a new scan to check for changes. Tally sends submissions automatically once its webhook has been configured at a public HTTPS URL.
 4. The server validates company domains and imports source text into the correct workspace. GitHub requires an explicit customer company/domain and optional customer label. Airtable and Tally use Company and Company domain fields. No company identity is inferred from an email, GitHub username, or repository owner.
-5. Add a Nebius key in AI provider settings. Pick Lightning or Super. Verification makes a small billable request to the chat and embedding models.
+5. Add a Nebius key in AI provider settings. Pick a supported chat model. Verification makes a small billable request to the chat and embedding models.
 6. Press **Process evidence**. Text is split into smaller chunks, embedded, and analyzed. New signals are associated with accounts and exact source quotes. Importing alone does not invoke AI.
 7. Review the dashboard, open an account, and ask a question such as "What is preventing this customer from renewing?" The server retrieves relevant text, asks the selected model, and validates returned source quotes before saving the answer.
 
 ## How a company would use it
 
-For this prototype, one designated person operates a workspace for their business. For example, a customer-success lead connects a customer-specific GitHub label, imports a feedback table, and sends a renewal survey through Tally. They review risks before account meetings, check original evidence, and decide what to do. The app does not send emails, modify tickets, close issues, or change CRM records.
+In the current app, one designated person operates a workspace for their business. For example, a customer-success lead connects a customer-specific GitHub label, imports a feedback table, and sends a renewal survey through Tally. They review risks before account meetings, check original evidence, and decide what to do. The app does not send emails, modify tickets, close issues, or change CRM records.
 
 **Important current limit:** every new signup gets a personal workspace. Team invitation, workspace switching in the UI, company-wide SSO, and an admin console are not implemented. The database has owner/member permissions and tenant isolation, but that alone does not make the product a finished collaborative company workspace. Do not share a login as a substitute. Team onboarding needs a separate implementation before a whole company can collaborate in one workspace.
 
@@ -67,7 +67,7 @@ For this prototype, one designated person operates a workspace for their busines
 
 ## Asking questions
 
-Embeddings turn text into numerical vectors so "canceling our contract" can be found for a question about "renewal risk." Qwen supplies both document and question embeddings. Turso combines that meaning-based search with keyword search, scoped to the current workspace. Nemotron then answers using the retrieved evidence.
+Embeddings turn text into numerical vectors so "canceling our contract" can be found for a question about "renewal risk." Qwen supplies both document and question embeddings. Turso combines that meaning-based search with keyword search, scoped to the current workspace. The selected chat model then answers using the retrieved evidence.
 
 An exact matching quote confirms where text came from, not whether the customer's statement is true or the AI's interpretation is correct. Account health is a simple heuristic, not a verified prediction. Review the source before making business decisions.
 
@@ -75,6 +75,6 @@ An exact matching quote confirms where text came from, not whether the customer'
 
 Each workspace pays Nebius through its own key (BYOK). The app operator still pays any hosting, Auth0, Turso, and other service charges above their free allowances. A source API's free tier does not make AI processing free.
 
-Customer text sent for processing goes to Nebius. Super uses the US Central endpoint; Lightning and Qwen embeddings use the global endpoint. Choose sources and model routing appropriate to the information you are authorized to process. Do not put tokens into customer notes or source text.
+Customer text sent for processing goes to Nebius. Choose sources and model routing appropriate to the information you are authorized to process. Do not put tokens into customer notes or source text.
 
-The browser login and connector protocols are implemented, but actual Auth0 callback completion, private source access, Airtable credentials, live Tally delivery, real Nebius calls, and public deployment require live acceptance testing. See [DEPLOYMENT.md](DEPLOYMENT.md) and [CONNECTORS.md](CONNECTORS.md).
+Before using the app with real customer data, complete the live checks in [DEPLOYMENT.md](DEPLOYMENT.md) and [CONNECTORS.md](CONNECTORS.md).

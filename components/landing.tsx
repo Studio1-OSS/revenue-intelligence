@@ -37,7 +37,9 @@ export function Landing({ authConfigured }: { authConfigured: boolean }) {
         rel="noopener noreferrer"
       >
         <Image src="/token-factory.png" alt="" width={32} height={32} />
-        <span>Powered by <strong>Token Factory</strong></span>
+        <span>
+          Powered by <strong>Token Factory</strong>
+        </span>
         <ArrowUpRight size={16} aria-hidden="true" />
       </a>
       <header className="landing-nav">
@@ -84,7 +86,7 @@ export function Landing({ authConfigured }: { authConfigured: boolean }) {
           />
           <div className="hero-copy">
             <p className="landing-eyebrow">
-              <AudioLines size={16} /> CUSTOMER SIGNALS. COMMERCIAL CONTEXT.
+              <AudioLines size={16} /> REVOPS SIGNALS. COMMERCIAL CONTEXT.
             </p>
             <h1>
               <span>Revenue-</span>
@@ -93,7 +95,7 @@ export function Landing({ authConfigured }: { authConfigured: boolean }) {
               </span>
             </h1>
             <p className="hero-message">
-              Know what your customers are telling you.
+              RevOps context from what customers are telling you.
               <br /> Before your revenue does.
             </p>
             <div className="hero-actions">
@@ -134,7 +136,8 @@ export function Landing({ authConfigured }: { authConfigured: boolean }) {
             <p>
               Spot renewal risk, expansion intent, and competitive pressure in
               conversations, issues, forms, and visual evidence. Then go
-              straight to the source behind the finding.
+              straight to the source behind the finding for RevOps and customer
+              success reviews.
             </p>
           </div>
           <p className="demo-disclaimer">{DEMO_DISCLAIMER}</p>
@@ -225,7 +228,7 @@ export function Landing({ authConfigured }: { authConfigured: boolean }) {
                 n: "01",
                 icon: Upload,
                 title: "Collect the conversation",
-                body: "Connect GitHub Issues, Airtable, or Tally. Bring customer feedback, form responses, screenshots, and notes into one account history.",
+                body: "Connect GitHub Issues, Airtable, or Tally. Bring customer feedback, form responses, screenshots, and RevOps notes into one account history.",
               },
               {
                 n: "02",
@@ -318,7 +321,7 @@ export function Landing({ authConfigured }: { authConfigured: boolean }) {
             {[
               {
                 q: "What can I import?",
-                a: "Connect GitHub Issues or an Airtable feedback table, receive Tally form responses, upload CSV files, add notes manually, or extract evidence from PNG, JPEG, and WebP screenshots of charts, dashboards, docs, and slides. GitHub and Airtable imports run when you sync; Tally receives new responses through a signed webhook. Process imported evidence using your workspace's Nebius key.",
+                a: "Connect GitHub Issues or an Airtable feedback table, receive Tally form responses, upload CSV files, add RevOps or customer-success notes manually, or extract evidence from PNG, JPEG, and WebP screenshots of charts, dashboards, docs, and slides. GitHub and Airtable imports run when you sync; Tally receives new responses through a signed webhook. Process imported evidence using your workspace's Nebius key.",
               },
               {
                 q: "Can I explore without an AI key?",
@@ -361,7 +364,7 @@ export function Landing({ authConfigured }: { authConfigured: boolean }) {
         <Link href="/">
           <Brand />
         </Link>
-        <span>Customer evidence. Revenue decisions.</span>
+        <span>Customer evidence. RevOps decisions.</span>
         <a href="#evidence">
           Back to the product <ArrowUpRight size={14} />
         </a>

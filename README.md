@@ -41,6 +41,8 @@ Available today:
 
 Common next connectors include Zendesk, HubSpot, Slack, Intercom, Linear, Jira, Salesforce, and Help Scout. Each new connector only needs to turn its records into Revenue-Intelligence evidence documents; the existing pipeline handles chunking, Qwen embeddings, Turso search, signal detection, and cited answers.
 
+For production and enterprise use, native connectors to systems of record are the expected next step. CSV, manual upload, GitHub, Airtable, and Tally are useful for prototypes, pilots, and lightweight teams, but larger customer-success and RevOps teams will usually need direct sync from tools such as Zendesk, HubSpot, Slack, Salesforce, Intercom, Linear, Jira, or Help Scout.
+
 ## Qwen-Powered Evidence Analysis
 
 Revenue-Intelligence uses Qwen3.8-27B for customer-evidence reasoning and Qwen3-Embedding-8B for retrieval. Text notes, tickets, form submissions, CSV rows, and screenshots become searchable evidence that can produce cited answers, renewal-risk signals, expansion opportunities, and competitor mentions.
@@ -50,6 +52,10 @@ Visual evidence supports PNG, JPEG, and WebP uploads, making the app useful for 
 ## Current Scope
 
 Workspaces are personal; team invitations are not included yet. Demo company names are real, but all demo conversations and commercial figures are synthetic and imply no endorsement.
+
+## Use As A Template
+
+This repository can be used as a starting point for your own revenue-intelligence app. Keep the evidence pipeline, replace the branding or data sources, and add new connectors by mapping external records into evidence documents. Good next additions include native Zendesk, HubSpot, Slack, Intercom, Linear, Jira, Salesforce, or Help Scout connectors.
 
 ## Get Started
 

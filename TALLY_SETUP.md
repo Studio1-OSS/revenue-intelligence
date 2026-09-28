@@ -1,6 +1,6 @@
 # Tally Feedback Integration
 
-Tally is the first live prototype connector. Its [webhook integration](https://tally.so/help/webhooks) is available on the free plan. There is no Tally API token or platform AI key to configure.
+Tally is included as a webhook connector for customer feedback and intake forms. Its [webhook integration](https://tally.so/help/webhooks) is available on the free plan. There is no Tally API token or platform AI key to configure.
 
 ## Connect a form
 
@@ -23,7 +23,7 @@ Only submit customer information you are authorized to process. A public form do
 
 ## Localhost and deployment
 
-The app currently runs at `http://127.0.0.1:3000`. Tally's servers cannot reach this address. Local setup, code tests, and a demo preview work, but a real external delivery requires a reachable HTTPS endpoint.
+Tally's servers cannot reach a local-only development URL. Local setup, code tests, and a demo preview work, but a real external delivery requires a reachable HTTPS endpoint.
 
 For the simplest stable setup, deploy to Vercel using [DEPLOYMENT.md](DEPLOYMENT.md), set `NEXT_PUBLIC_APP_URL` to that deployment's HTTPS origin, and update Auth0 callbacks. Copy the endpoint from the deployed app. Keep the same encryption secret when moving an existing database, or reconnect its AI keys and Tally form.
 
@@ -51,7 +51,7 @@ Inspect Tally's webhook event log and delivery response. Error bodies contain sa
 | 404 `NOT_FOUND`                        | Connection ID is unknown or disabled.                                                          |
 | 409 `WORKSPACE_LIMIT`                  | Delete older evidence before retrying.                                                         |
 | 409 `CONNECTION_CHANGED`               | A disconnect/reconnect happened during delivery. Retry against current settings.               |
-| 413 `TOO_LARGE`                        | Remove unnecessary questions/attachments from this prototype form.                             |
+| 413 `TOO_LARGE`                        | Remove unnecessary questions/attachments from this form.                                       |
 | 429 `RATE_LIMITED`                     | Wait for the next rate-limit window; Tally retries failed deliveries.                          |
 | 5XX                                    | Check deployment configuration, migration 004, database availability, and encryption key.      |
 
@@ -59,4 +59,4 @@ Inspect Tally's webhook event log and delivery response. Error bodies contain sa
 
 Automated tests use isolated local libSQL databases, signed Tally-format fixtures, and a mocked Nebius transport. They cover signature rejection, tenant scope, encrypted secrets, retry deduplication, rollback, disconnect/reconnect, HTTP authorization, payload limits, and feedback-to-cited-answer processing.
 
-A live Tally submission, actual Auth0 callback, and billable Nebius processing must still be verified with the user's accounts. Do not present fixture tests as live service verification.
+A live Tally submission, actual Auth0 callback, and billable Nebius processing must still be verified with your intended service accounts. Do not present fixture tests as live service verification.

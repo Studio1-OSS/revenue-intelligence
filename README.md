@@ -82,3 +82,5 @@ Run checks with `bun test`, `bun run typecheck`, and `bun run build`.
 ## License
 
 [MIT](LICENSE).
+
+Inspired by [open-customer-insights](https://github.com/Nutlope/open-customer-insights)

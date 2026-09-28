@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { Workspace } from "@/components/workspace";
 import { AssistantPanel } from "@/components/assistant-panel";
 import { AccountEditor } from "@/components/account-editor";
 import { pageData } from "@/lib/page-data";
@@ -14,7 +13,7 @@ export default async function Page({
   const account = props.data.accounts.find((a) => a.domain === domain);
   if (!account) notFound();
   return (
-    <Workspace view="account" domain={domain} {...props}>
+    <>
       <AccountEditor key={account.id} account={account} demo={props.demo} />
       <AssistantPanel
         key={account.id}
@@ -23,6 +22,6 @@ export default async function Page({
         domain={domain}
         queries={props.data.savedQueries}
       />
-    </Workspace>
+    </>
   );
 }

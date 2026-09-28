@@ -26,18 +26,24 @@ Import GitHub issues, Airtable records, Tally responses, CSV files, notes, or vi
 - GitHub Issues and Airtable manual sync, plus signed Tally webhooks.
 - Qwen-powered extraction for chart, slide, dashboard, and document screenshots.
 - Semantic and keyword search, cited answers, and saved questions.
-- MCP access for external AI assistants is included as an inactive developer-preview route.
+- MCP-ready foundation for future external AI assistant workflows.
 - Server-side encrypted AI keys and workspace-isolated data.
 
 ## Integrations
 
-Revenue-Intelligence ships with CSV/manual evidence upload, visual evidence upload, GitHub Issues, Airtable, and Tally webhooks. These cover the first prototype use cases: product feedback, support-style tickets, intake forms, account notes, screenshots, and spreadsheet exports.
+Revenue-Intelligence ships with CSV/manual evidence upload, visual evidence upload, GitHub Issues, Airtable, and Tally webhooks. These cover product feedback, support-style tickets, intake forms, account notes, screenshots, and spreadsheet exports.
 
 The connector layer is designed to be extended with customer systems such as Zendesk, HubSpot, Slack, Intercom, Linear, Jira, Salesforce, or Help Scout. Those connectors can map external records into the same evidence pipeline: source document -> chunks -> Qwen embeddings -> Turso search -> cited account signals.
 
-**Prototype:** workspaces are personal; team invitations are not included. Demo company names are real, but all conversations and commercial figures are synthetic and imply no endorsement.
+## Qwen-Powered Evidence Analysis
 
-Qwen3.8-27B uses the model ID `Qwen/Qwen3.8-27B` through Nebius's global endpoint. Availability is verified with your workspace key when connecting. Existing workspaces retain their selected model until changed in AI settings. Visual evidence currently supports PNG, JPEG, and WebP images; export PDF pages, docs, and deck slides as images before upload. Search embeddings remain Qwen3-Embedding-8B, so changing chat models does not require re-embedding evidence.
+Revenue-Intelligence uses Qwen3.8-27B for customer-evidence reasoning and Qwen3-Embedding-8B for retrieval. Text notes, tickets, form submissions, CSV rows, and screenshots become searchable evidence that can produce cited answers, renewal-risk signals, expansion opportunities, and competitor mentions.
+
+Visual evidence supports PNG, JPEG, and WebP uploads, making the app useful for screenshots of dashboards, charts, exported slides, and customer-shared product states. PDFs, docs, and decks can be exported as images before upload.
+
+## Current Scope
+
+Workspaces are personal; team invitations are not included yet. Demo company names are real, but all demo conversations and commercial figures are synthetic and imply no endorsement.
 
 ## Get Started
 

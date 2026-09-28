@@ -31,9 +31,15 @@ Import GitHub issues, Airtable records, Tally responses, CSV files, notes, or vi
 
 ## Integrations
 
-Revenue-Intelligence ships with CSV/manual evidence upload, visual evidence upload, GitHub Issues, Airtable, and Tally webhooks. These cover product feedback, support-style tickets, intake forms, account notes, screenshots, and spreadsheet exports.
+Available today:
 
-The connector layer is designed to be extended with customer systems such as Zendesk, HubSpot, Slack, Intercom, Linear, Jira, Salesforce, or Help Scout. Those connectors can map external records into the same evidence pipeline: source document -> chunks -> Qwen embeddings -> Turso search -> cited account signals.
+- CSV and manual evidence upload for exported support tickets, sales notes, account reviews, and spreadsheets.
+- Visual evidence upload for screenshots, charts, dashboard exports, and slide images.
+- GitHub Issues sync for product feedback and public/private issue queues.
+- Airtable sync for lightweight customer tables and feedback databases.
+- Tally webhooks for form submissions and intake workflows.
+
+Common next connectors include Zendesk, HubSpot, Slack, Intercom, Linear, Jira, Salesforce, and Help Scout. Each new connector only needs to turn its records into Revenue-Intelligence evidence documents; the existing pipeline handles chunking, Qwen embeddings, Turso search, signal detection, and cited answers.
 
 ## Qwen-Powered Evidence Analysis
 

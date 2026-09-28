@@ -110,7 +110,7 @@ export function AISettings({
           {needsVerification && (
             <p className="form-message">
               Your previous model is no longer supported. Select and verify a
-              Nemotron model to resume AI.
+              supported model to resume AI.
             </p>
           )}
           <label>

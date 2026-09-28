@@ -10,6 +10,7 @@ import {
 export { EMBEDDING_MODEL, DIMENSIONS } from "./models";
 const endpoint = "https://api.tokenfactory.nebius.com/v1/";
 const chatEndpoints: Record<ChatModel, string> = {
+  "Qwen/Qwen3.8-27B": endpoint,
   "nvidia/Nemotron-3_5-Lightning": endpoint,
   "nvidia/nemotron-3-super-120b-a12b":
     "https://api.tokenfactory.us-central1.nebius.com/v1/",
@@ -33,7 +34,7 @@ export class Nebius {
     if (!isChatModel(model))
       throw new AppError(
         "AI_MODEL_REQUIRED",
-        "Select and verify a supported Nemotron model in AI settings.",
+        "Select and verify a supported model in AI settings.",
         409,
       );
     this.model = model;
@@ -154,6 +155,10 @@ export class Nebius {
             ],
             temperature: 0.2,
             max_tokens: maxTokens,
+            // Reserve the bounded output budget for the answer, not reasoning.
+            ...(this.model === "Qwen/Qwen3.8-27B"
+              ? { chat_template_kwargs: { enable_thinking: false } }
+              : {}),
             ...(jsonMode ? { response_format: { type: "json_object" } } : {}),
           },
           chatEndpoints[this.model],

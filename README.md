@@ -14,7 +14,7 @@ Import GitHub issues, Airtable records, Tally responses, CSV files, or notes. Re
 | --- | --- |
 | App | Next.js 16, React 19, TypeScript, Bun |
 | AI platform | Nebius Token Factory |
-| Chat and signals | NVIDIA Nemotron 3.5 Lightning or Nemotron 3 Super |
+| Chat and signals | Qwen3.8-27B (default), NVIDIA Nemotron 3.5 Lightning, or Nemotron 3 Super |
 | Embeddings | Qwen3-Embedding-8B, requested at 1,536 dimensions |
 | Database and search | Turso/libSQL, native vectors and FTS5 |
 | Authentication | Auth0 |
@@ -29,6 +29,8 @@ Import GitHub issues, Airtable records, Tally responses, CSV files, or notes. Re
 - Server-side encrypted AI keys and workspace-isolated data.
 
 **Prototype:** workspaces are personal; team invitations are not included. Demo company names are real, but all conversations and commercial figures are synthetic and imply no endorsement.
+
+Qwen3.8-27B uses the model ID `Qwen/Qwen3.8-27B` through Nebius's global endpoint. Availability is verified with your workspace key when connecting. Existing workspaces retain their selected model until changed in AI settings. The app currently sends text only; image and video uploads are not supported. Search embeddings remain Qwen3-Embedding-8B, so changing chat models does not require re-embedding evidence.
 
 ## Get Started
 

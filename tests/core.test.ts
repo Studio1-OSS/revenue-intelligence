@@ -295,11 +295,15 @@ describe("BYOK and provider failures", () => {
         },
       });
       expect(calls[1].url).toBe(
-        model === DEFAULT_CHAT_MODEL
-          ? "https://api.tokenfactory.nebius.com/v1/chat/completions"
-          : "https://api.tokenfactory.us-central1.nebius.com/v1/chat/completions",
+        model === "nvidia/nemotron-3-super-120b-a12b"
+          ? "https://api.tokenfactory.us-central1.nebius.com/v1/chat/completions"
+          : "https://api.tokenfactory.nebius.com/v1/chat/completions",
       );
       expect(calls[1].body.model).toBe(model);
+      expect(calls[1].body.response_format).toEqual({ type: "json_object" });
+      expect(calls[1].body.chat_template_kwargs).toEqual(
+        model === "Qwen/Qwen3.8-27B" ? { enable_thinking: false } : undefined,
+      );
     }
   });
 });

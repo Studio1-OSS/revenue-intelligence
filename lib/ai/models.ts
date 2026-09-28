@@ -1,10 +1,16 @@
 export const CHAT_MODEL_IDS = [
   "nvidia/Nemotron-3_5-Lightning",
   "nvidia/nemotron-3-super-120b-a12b",
+  "Qwen/Qwen3.8-27B",
 ] as const;
 export type ChatModel = (typeof CHAT_MODEL_IDS)[number];
-export const DEFAULT_CHAT_MODEL: ChatModel = CHAT_MODEL_IDS[0];
+export const DEFAULT_CHAT_MODEL: ChatModel = "Qwen/Qwen3.8-27B";
 export const CHAT_MODELS = [
+  {
+    id: CHAT_MODEL_IDS[2],
+    label: "Qwen3.8 27B",
+    region: "Global endpoint",
+  },
   {
     id: CHAT_MODEL_IDS[0],
     label: "Nemotron 3.5 Lightning",
